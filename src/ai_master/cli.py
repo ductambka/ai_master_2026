@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import json
 
 from .logistic import LogisticRegression
 from .metrics import accuracy
 from .retrieval import TfidfRetriever
+from .evaluation import evaluate_files
 
 
 def demo() -> None:
@@ -28,13 +30,25 @@ def main() -> None:
     subparsers.add_parser("demo")
     train_parser = subparsers.add_parser("train")
     train_parser.add_argument("--epochs", type=int, default=100)
+    evaluate_parser = subparsers.add_parser("evaluate", help="evaluate provider output against a JSONL gold set")
+    evaluate_parser.add_argument("--gold", required=True, type=str)
+    evaluate_parser.add_argument("--predictions", required=True, type=str)
+    evaluate_parser.add_argument("--output", required=True, type=str)
+    evaluate_parser.add_argument("--k", type=int, default=3)
+    evaluate_parser.add_argument("--seed", type=int, default=0)
+    evaluate_parser.add_argument("--semantic-threshold", type=float, default=0.5)
     args = parser.parse_args()
     if args.command == "demo":
         demo()
-    else:
+    elif args.command == "train":
         train(args.epochs)
+    else:
+        result = evaluate_files(args.gold, args.predictions, k=args.k, seed=args.seed, semantic_threshold=args.semantic_threshold)
+        with open(args.output, "w", encoding="utf-8") as output:
+            json.dump(result, output, indent=2, sort_keys=True)
+            output.write("\n")
+        print(json.dumps(result, sort_keys=True))
 
 
 if __name__ == "__main__":
     main()
-

@@ -1,0 +1,2 @@
+{"id":"q1","retrieved_ids":["d1","d2"],"claims":[{"text":"Paris is the capital of France.","citation_ids":["d1"]},{"text":"The city is located in Europe.","citation_ids":["d2"]},{"text":"It has a large population.","citation_ids":[]}]}
+{"id":"q2","retrieved_ids":["d3"],"claims":[{"text":"Python was created by Guido van Rossum.","citation_ids":["wrong"]}]}
