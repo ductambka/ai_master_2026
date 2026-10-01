@@ -1,0 +1,38 @@
+[
+  {
+    "internal_id": "ai_master_001",
+    "prompt": "Chuẩn hóa skeleton lab và môi trường tái lập cho chương trình AI 36 tuần",
+    "base_prompt": "Tạo bộ khung lab có cấu trúc thống nhất và xác minh chạy được",
+    "extra_prompt": "Phạm vi: docs/labs, examples, tests và tooling trong repository. Acceptance: tạo template lab gồm README, run script, config seed, output manifest và test; chạy được từ môi trường sạch; không thêm secret. Dependency: none. Verification: python -m compileall src; pytest -q; chạy ít nhất một template. Risk: không thay đổi API hiện có; rollback bằng revert commit. Cập nhật durable state bằng report nêu file, lệnh, exit code và artifact.",
+    "dependencies": [],
+    "priority": 110,
+    "job_status": "queued"
+  },
+  {
+    "internal_id": "ai_master_002",
+    "prompt": "Xây lab mini-autograd và gradient checking có kiểm thử",
+    "base_prompt": "Triển khai một engine đạo hàm tự động tối giản phục vụ giảng dạy",
+    "extra_prompt": "Phạm vi: src/ai_master/autograd.py, tests và docs/labs/L04. Acceptance: scalar graph hỗ trợ +, *, exp/log, backward topo; gradient check sai số tuyệt đối dưới 1e-5; có test graph phân nhánh và lỗi domain. Dependency: ai_master_001. Verification: pytest -q tests/test_autograd.py; python -m compileall src. Risk: chỉ scalar, không tối ưu production; rollback bằng xóa module mới hoặc forward-fix. Ghi seed, kết quả và checksum artifact vào durable state.",
+    "dependencies": ["ai_master_001"],
+    "priority": 105,
+    "job_status": "queued"
+  },
+  {
+    "internal_id": "ai_master_003",
+    "prompt": "Xây bộ đánh giá RAG offline với citation và phát hiện claim không được hỗ trợ",
+    "base_prompt": "Tạo evaluation harness độc lập với model provider",
+    "extra_prompt": "Phạm vi: src/ai_master/evaluation, tests, docs/labs/L07. Acceptance: đọc gold JSONL, tính recall@k, exact/semantic-lite citation coverage, unsupported-claim rate; output JSON có version, seed và input checksum; test empty/malformed input. Dependency: ai_master_001. Verification: pytest -q; chạy CLI trên fixture. Risk: metric lexical không thay thế đánh giá người; không gọi mạng/API. Rollback bằng revert commit; forward-fix nếu schema thay đổi. Cập nhật durable state và nêu giới hạn validity.",
+    "dependencies": ["ai_master_001"],
+    "priority": 100,
+    "job_status": "queued"
+  },
+  {
+    "internal_id": "ai_master_004",
+    "prompt": "Thiết kế capstone reference service có healthcheck, audit log và policy tool",
+    "base_prompt": "Đóng gói các nguyên tắc khóa học thành một dịch vụ mẫu an toàn",
+    "extra_prompt": "Phạm vi: service/, tests/integration và docs. Acceptance: endpoint health/readiness, schema validation, request ID, structured log đã khử secret, allowlist tool và test từ chối tool trái phép; Dockerfile tùy chọn. Dependency: ai_master_002, ai_master_003. Verification: pytest -q; nếu có container thì docker build và smoke test. Risk: chưa production-ready, không dùng dữ liệu thật; rollback theo image/version trước. Cập nhật durable state bằng evidence và threat-model residual risk.",
+    "dependencies": ["ai_master_002", "ai_master_003"],
+    "priority": 95,
+    "job_status": "queued"
+  }
+]
