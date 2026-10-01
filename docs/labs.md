@@ -2,6 +2,14 @@
 
 Mỗi lab phải lưu `README`, `run.sh` hoặc lệnh chạy, seed, môi trường, kết quả, failure log và một đoạn “what would falsify this result?”.
 
+## Bộ khung lab
+
+[`examples/lab_template`](../examples/lab_template) là template chuẩn để bắt
+đầu lab mới. Template có config seed, runner, artifact `metrics.json`,
+`manifest.json` và test subprocess. Chạy từ repository root bằng
+`./tooling/run_lab_template.sh`; runner chỉ dùng Python standard library và
+không yêu cầu secret.
+
 | ID | Đề bài | Deliverable | Nghiệm thu |
 |---|---|---|---|
 | L01 | Cài logistic regression từ đầu | model + unit tests | loss giảm, accuracy baseline đạt |
@@ -32,4 +40,3 @@ Threats to validity:
 Rollback or containment:
 Next experiment:
 ```
-

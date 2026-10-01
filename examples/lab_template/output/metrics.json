@@ -1,0 +1,7 @@
+{
+  "accuracy": 1.0,
+  "lab": "nearest-centroid-baseline",
+  "min_accuracy": 1.0,
+  "samples": 6,
+  "seed": 7
+}

@@ -1,0 +1,15 @@
+{
+  "seed": 7,
+  "name": "nearest-centroid-baseline",
+  "acceptance": {
+    "min_accuracy": 1.0
+  },
+  "dataset": [
+    {"features": [0.0, 0.2], "label": "left"},
+    {"features": [0.2, 0.0], "label": "left"},
+    {"features": [0.1, 0.3], "label": "left"},
+    {"features": [4.8, 5.0], "label": "right"},
+    {"features": [5.2, 4.9], "label": "right"},
+    {"features": [5.0, 5.3], "label": "right"}
+  ]
+}

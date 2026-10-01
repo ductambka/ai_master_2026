@@ -1,0 +1,21 @@
+{
+  "artifacts": [
+    {
+      "path": "metrics.json",
+      "sha256": "b9bae173c65fb8cc12b7f50811d816a35bfab0cab17787866c79607d81b86ee9"
+    }
+  ],
+  "config": "config.json",
+  "created_at_utc": "2026-10-01T11:46:39.564104+00:00",
+  "lab": "nearest-centroid-baseline",
+  "metrics": {
+    "accuracy": 1.0,
+    "lab": "nearest-centroid-baseline",
+    "min_accuracy": 1.0,
+    "samples": 6,
+    "seed": 7
+  },
+  "schema_version": 1,
+  "seed": 7,
+  "status": "PASS"
+}
