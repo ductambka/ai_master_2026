@@ -19,6 +19,17 @@ def test_logistic_regression_rejects_invalid_training_parameters():
     with pytest.raises(ValueError, match="rectangular"):
         LogisticRegression().fit([[], []], [0, 1])
 
+    with pytest.raises(ValueError, match="finite numeric"):
+        LogisticRegression().fit([[0.0], [float("nan")]], [0, 1])
+    with pytest.raises(ValueError, match="binary labels"):
+        LogisticRegression().fit([[0.0], [1.0]], [False, True])
+
+
+def test_logistic_regression_rejects_non_finite_prediction_features():
+    model = LogisticRegression().fit([[0.0], [1.0]], [0, 1])
+    with pytest.raises(ValueError, match="finite numeric"):
+        model.predict_proba_one([float("inf")])
+
 
 def test_metrics_and_input_validation():
     assert macro_f1([0, 1, 1], [0, 1, 0]) == pytest.approx(0.666666, rel=1e-4)

@@ -36,7 +36,15 @@ class LogisticRegression:
             raise ValueError("l2 must be a non-negative finite number")
         if not x or len(x) != len(y) or not x[0] or any(len(row) != len(x[0]) for row in x):
             raise ValueError("x must be a non-empty rectangular matrix matching y")
-        if any(label not in (0, 1) for label in y):
+        if any(
+            not isinstance(value, (int, float))
+            or isinstance(value, bool)
+            or not math.isfinite(value)
+            for row in x
+            for value in row
+        ):
+            raise ValueError("x must contain only finite numeric values")
+        if any(not isinstance(label, int) or isinstance(label, bool) or label not in (0, 1) for label in y):
             raise ValueError("binary labels must be 0 or 1")
         self.weights = [0.0] * len(x[0])
         self.bias = 0.0
@@ -58,6 +66,13 @@ class LogisticRegression:
     def predict_proba_one(self, row: list[float]) -> float:
         if not self.weights or len(row) != len(self.weights):
             raise ValueError("model is not fitted or feature count is wrong")
+        if any(
+            not isinstance(value, (int, float))
+            or isinstance(value, bool)
+            or not math.isfinite(value)
+            for value in row
+        ):
+            raise ValueError("row must contain only finite numeric values")
         return _sigmoid(self.bias + sum(weight * value for weight, value in zip(self.weights, row)))
 
     def predict(self, x: list[list[float]], threshold: float = 0.5) -> list[int]:
