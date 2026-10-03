@@ -57,3 +57,18 @@ def test_log_rejects_non_positive_values():
         log(Value(0.0))
     with pytest.raises(ValueError, match="positive"):
         Value(-1.0).log()
+
+
+@pytest.mark.parametrize("data", [True, float("nan"), float("inf"), "1"])
+def test_value_rejects_non_finite_or_non_numeric_data(data):
+    with pytest.raises(ValueError, match="finite number"):
+        Value(data)  # type: ignore[arg-type]
+
+
+def test_power_rejects_invalid_exponents_and_zero_domain():
+    with pytest.raises(TypeError, match="scalar number"):
+        Value(2.0) ** True  # type: ignore[operator]
+    with pytest.raises(ValueError, match="finite"):
+        Value(2.0) ** float("inf")
+    with pytest.raises(ValueError, match="non-positive"):
+        Value(0.0) ** 0.0

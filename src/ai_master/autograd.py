@@ -20,6 +20,8 @@ class Value:
         _children: Iterable["Value"] = (),
         _op: str = "",
     ) -> None:
+        if isinstance(data, bool) or not isinstance(data, (int, float)) or not math.isfinite(data):
+            raise ValueError("data must be a finite number")
         self.data = float(data)
         self.grad = 0.0
         self._prev = set(_children)
@@ -76,8 +78,12 @@ class Value:
         return self._coerce(other) / self
 
     def __pow__(self, exponent: float) -> "Value":
-        if not isinstance(exponent, (int, float)):
+        if isinstance(exponent, bool) or not isinstance(exponent, (int, float)):
             raise TypeError("exponent must be a scalar number")
+        if not math.isfinite(exponent):
+            raise ValueError("exponent must be finite")
+        if self.data == 0.0 and exponent <= 0:
+            raise ValueError("power is undefined for zero with non-positive exponent")
         if self.data == 0.0 and exponent < 1:
             raise ValueError("power is undefined for zero with exponent below 1")
         out = Value(self.data**exponent, (self,), f"**{exponent}")

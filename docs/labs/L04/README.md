@@ -20,7 +20,9 @@ python -m compileall src
 Engine hỗ trợ `+`, `-`, `*`, `/`, lũy thừa với số, `exp` và `log` (cả dạng
 phương thức lẫn hàm). Graph có nhánh được xử lý bằng cách cộng dồn gradient
 khi một node được dùng nhiều lần. `log(x)` yêu cầu `x > 0` và ném `ValueError`
-ngoài miền xác định.
+ngoài miền xác định. Giá trị đầu vào và số mũ phải là số hữu hạn (không nhận
+boolean hoặc chuỗi); lũy thừa với cơ số bằng 0 và số mũ không dương cũng bị
+từ chối để tránh forward hợp lệ giả nhưng backward không xác định.
 
 Mỗi lần gọi `backward()` sẽ đặt lại gradient của các node trong graph trước
 khi lan truyền ngược; vì vậy gọi lại trên cùng output cho cùng kết quả, còn
