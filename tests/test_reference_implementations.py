@@ -1,7 +1,7 @@
 import pytest
 
 from ai_master.logistic import LogisticRegression
-from ai_master.metrics import accuracy, macro_f1, rmse
+from ai_master.metrics import accuracy, confusion_matrix, macro_f1, rmse
 from ai_master.retrieval import TfidfRetriever, tokenize
 
 
@@ -42,6 +42,11 @@ def test_metrics_and_input_validation():
         accuracy([1], [True])
     with pytest.raises(ValueError, match="finite numbers"):
         rmse([1.0], [float("inf")])
+    assert confusion_matrix((0, 1, 1), iter((0, 0, 1))) == {(0, 0): 1, (1, 0): 1, (1, 1): 1}
+    with pytest.raises(ValueError, match="same non-zero length"):
+        confusion_matrix([0, 1], [0])
+    with pytest.raises(ValueError, match="integers"):
+        confusion_matrix([0], [False])
 
 
 def test_retriever_returns_relevant_document_and_handles_unicode():

@@ -37,6 +37,8 @@ def test_empty_inputs_are_valid_and_return_zero_metrics():
         ({"k": True}, "k must be at least 1"),
         ({"semantic_threshold": -0.1}, "semantic_threshold must be between 0 and 1"),
         ({"semantic_threshold": True}, "semantic_threshold must be between 0 and 1"),
+        ({"semantic_threshold": float("nan")}, "semantic_threshold must be between 0 and 1"),
+        ({"semantic_threshold": float("inf")}, "semantic_threshold must be between 0 and 1"),
     ],
 )
 def test_evaluator_rejects_invalid_metric_parameters(kwargs, message):

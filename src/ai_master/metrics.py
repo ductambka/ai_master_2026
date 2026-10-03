@@ -40,4 +40,13 @@ def rmse(y_true: Sequence[float], y_pred: Sequence[float]) -> float:
 
 
 def confusion_matrix(y_true: Iterable[int], y_pred: Iterable[int]) -> dict[tuple[int, int], int]:
-    return Counter(zip(y_true, y_pred))
+    true_values = tuple(y_true)
+    predicted_values = tuple(y_pred)
+    if len(true_values) != len(predicted_values) or not true_values:
+        raise ValueError("y_true and y_pred must have the same non-zero length")
+    if any(
+        isinstance(value, bool) or not isinstance(value, int)
+        for value in (*true_values, *predicted_values)
+    ):
+        raise ValueError("confusion_matrix labels must be integers")
+    return Counter(zip(true_values, predicted_values))

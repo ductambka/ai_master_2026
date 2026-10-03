@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 from pathlib import Path
 from typing import Any, Iterable
@@ -96,6 +97,7 @@ def evaluate_records(
     if (
         not isinstance(semantic_threshold, (int, float))
         or isinstance(semantic_threshold, bool)
+        or not math.isfinite(semantic_threshold)
         or not 0 <= semantic_threshold <= 1
     ):
         raise EvaluationError("semantic_threshold must be between 0 and 1")
