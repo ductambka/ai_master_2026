@@ -28,11 +28,21 @@ class LogisticRegression:
     history: list[float] = field(default_factory=list)
 
     def fit(self, x: list[list[float]], y: list[int]) -> "LogisticRegression":
-        if not math.isfinite(self.learning_rate) or self.learning_rate <= 0:
+        if (
+            isinstance(self.learning_rate, bool)
+            or not isinstance(self.learning_rate, (int, float))
+            or not math.isfinite(self.learning_rate)
+            or self.learning_rate <= 0
+        ):
             raise ValueError("learning_rate must be a positive finite number")
         if not isinstance(self.epochs, int) or isinstance(self.epochs, bool) or self.epochs < 1:
             raise ValueError("epochs must be a positive integer")
-        if not math.isfinite(self.l2) or self.l2 < 0:
+        if (
+            isinstance(self.l2, bool)
+            or not isinstance(self.l2, (int, float))
+            or not math.isfinite(self.l2)
+            or self.l2 < 0
+        ):
             raise ValueError("l2 must be a non-negative finite number")
         if not isinstance(x, list) or not isinstance(y, list):
             raise ValueError("x and y must be lists")

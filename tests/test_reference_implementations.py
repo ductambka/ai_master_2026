@@ -12,7 +12,16 @@ def test_logistic_regression_learns_and_loss_decreases():
 
 
 def test_logistic_regression_rejects_invalid_training_parameters():
-    for parameter in ({"epochs": 0}, {"epochs": -1}, {"learning_rate": 0}, {"l2": -0.1}):
+    for parameter in (
+        {"epochs": 0},
+        {"epochs": -1},
+        {"learning_rate": 0},
+        {"learning_rate": True},
+        {"learning_rate": "fast"},
+        {"l2": -0.1},
+        {"l2": False},
+        {"l2": "none"},
+    ):
         with pytest.raises(ValueError):
             LogisticRegression(**parameter).fit([[0.0], [1.0]], [0, 1])
 
