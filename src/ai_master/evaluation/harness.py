@@ -25,8 +25,12 @@ def _normalise(text: str) -> str:
 
 def _read_jsonl(path: Path, kind: str) -> tuple[list[dict[str, Any]], bytes]:
     raw = path.read_bytes()
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise EvaluationError(f"{kind} is not valid UTF-8: {exc.reason}") from exc
     records: list[dict[str, Any]] = []
-    for line_no, line in enumerate(raw.splitlines(), 1):
+    for line_no, line in enumerate(text.splitlines(), 1):
         if not line.strip():
             continue
         try:
@@ -135,6 +139,8 @@ def evaluate_records(
     semantic_threshold: float = 0.5,
 ) -> dict[str, Any]:
     """Evaluate provider output against a gold set using deterministic lexical metrics."""
+    if not isinstance(gold_records, list) or not isinstance(prediction_records, list):
+        raise EvaluationError("gold_records and prediction_records must be lists")
     if not isinstance(k, int) or isinstance(k, bool) or k < 1:
         raise EvaluationError("k must be at least 1")
     if not isinstance(seed, int) or isinstance(seed, bool):

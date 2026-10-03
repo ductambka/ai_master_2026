@@ -137,6 +137,22 @@ def test_malformed_input_is_rejected(tmp_path):
         evaluate_files(gold, predictions)
 
 
+def test_invalid_utf8_input_is_rejected_as_evaluation_error(tmp_path):
+    gold = tmp_path / "gold.jsonl"
+    predictions = tmp_path / "predictions.jsonl"
+    gold.write_bytes(b'{"id":"q1"}\n')
+    predictions.write_bytes(b"\xff\xfe\n")
+
+    with pytest.raises(EvaluationError, match="not valid UTF-8"):
+        evaluate_files(gold, predictions)
+
+
+@pytest.mark.parametrize("gold_records,prediction_records", [(None, []), ([], None), ({}, [])])
+def test_evaluator_rejects_non_list_record_containers(gold_records, prediction_records):
+    with pytest.raises(EvaluationError, match="must be lists"):
+        evaluate_records(gold_records, prediction_records)
+
+
 def test_cli_output_is_json(tmp_path):
     output = tmp_path / "result.json"
     result = subprocess.run(
