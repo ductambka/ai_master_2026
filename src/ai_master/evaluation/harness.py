@@ -82,6 +82,49 @@ def _mean(values: Iterable[float]) -> float:
     return sum(values) / len(values) if values else 0.0
 
 
+def _semantic_matches(
+    predictions: list[dict[str, Any]],
+    gold_claims: list[dict[str, Any]],
+    threshold: float,
+) -> dict[int, int]:
+    """Match claims one-to-one, allowing later predictions to displace a match.
+
+    A simple greedy scan can consume a gold claim that is the only viable match
+    for a later prediction. Kuhn-style augmentation keeps the metric
+    deterministic while maximising the number of threshold-qualified matches.
+    Candidate edges are considered by descending lexical similarity and then
+    by source order for stable tie-breaking.
+    """
+    candidates: dict[int, list[tuple[float, int]]] = {}
+    for prediction_index, prediction in enumerate(predictions):
+        predicted_tokens = _tokens(prediction["text"])
+        scored: list[tuple[float, int]] = []
+        for gold_index, gold in enumerate(gold_claims):
+            gold_tokens = _tokens(gold["text"])
+            union = predicted_tokens | gold_tokens
+            score = len(predicted_tokens & gold_tokens) / len(union) if union else 1.0
+            if score >= threshold:
+                scored.append((score, gold_index))
+        candidates[prediction_index] = sorted(scored, key=lambda item: (-item[0], item[1]))
+
+    gold_to_prediction: dict[int, int] = {}
+
+    def augment(prediction_index: int, seen: set[int]) -> bool:
+        for _, gold_index in candidates[prediction_index]:
+            if gold_index in seen:
+                continue
+            seen.add(gold_index)
+            previous = gold_to_prediction.get(gold_index)
+            if previous is None or augment(previous, seen):
+                gold_to_prediction[gold_index] = prediction_index
+                return True
+        return False
+
+    for prediction_index in range(len(predictions)):
+        augment(prediction_index, set())
+    return {prediction_index: gold_index for gold_index, prediction_index in gold_to_prediction.items()}
+
+
 def evaluate_records(
     gold_records: list[dict[str, Any]],
     prediction_records: list[dict[str, Any]],
@@ -127,8 +170,8 @@ def evaluate_records(
 
         gold_claims = gold["claims"]
         exact_matches: set[int] = set()
-        semantic_matches: set[int] = set()
-        for claim in prediction["claims"]:
+        semantic_matches = _semantic_matches(prediction["claims"], gold_claims, semantic_threshold)
+        for prediction_index, claim in enumerate(prediction["claims"]):
             total_claims += 1
             predicted_citations = set(claim["citation_ids"])
             exact_index = next(
@@ -145,18 +188,16 @@ def evaluate_records(
                 exact_total += 1
                 exact_covered += bool(predicted_citations.intersection(gold_claims[exact_index]["citation_ids"]))
 
+            matched_index = semantic_matches.get(prediction_index)
             candidate: tuple[float, int, dict[str, Any]] | None = None
-            predicted_tokens = _tokens(claim["text"])
-            for index, gold_claim in enumerate(gold_claims):
-                if index in semantic_matches:
-                    continue
-                gold_tokens = _tokens(gold_claim["text"])
+            if matched_index is not None:
+                matched = gold_claims[matched_index]
+                predicted_tokens = _tokens(claim["text"])
+                gold_tokens = _tokens(matched["text"])
                 union = predicted_tokens | gold_tokens
                 score = len(predicted_tokens & gold_tokens) / len(union) if union else 1.0
-                if score >= semantic_threshold and (candidate is None or score > candidate[0]):
-                    candidate = (score, index, gold_claim)
+                candidate = (score, matched_index, matched)
             if candidate is not None:
-                semantic_matches.add(candidate[1])
                 semantic_total += 1
                 matched = candidate[2]
                 semantic_covered += bool(predicted_citations.intersection(matched["citation_ids"]))

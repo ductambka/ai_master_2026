@@ -51,6 +51,39 @@ def test_repeated_prediction_claims_do_not_reuse_one_gold_claim():
     assert metrics["unsupported_claim_rate"] == pytest.approx(0.5)
 
 
+def test_semantic_claim_matching_reassigns_competing_matches():
+    gold = [
+        {
+            "id": "q1",
+            "relevant_ids": [],
+            "claims": [
+                {"text": "alpha beta gamma", "citation_ids": ["d1"]},
+                {"text": "alpha beta delta", "citation_ids": ["d2"]},
+            ],
+        }
+    ]
+    predictions = [
+        {
+            "id": "q1",
+            "retrieved_ids": [],
+            "claims": [
+                {"text": "alpha beta gamma delta", "citation_ids": ["d2"]},
+                {"text": "alpha beta gamma", "citation_ids": ["d1"]},
+            ],
+        }
+    ]
+
+    metrics = evaluate_records(gold, predictions)["metrics"]
+
+    assert metrics["citation_coverage"]["semantic_lite"] == {
+        "covered": 2,
+        "total": 2,
+        "threshold": 0.5,
+        "value": 1.0,
+    }
+    assert metrics["unsupported_claim_rate"] == 0.0
+
+
 @pytest.mark.parametrize(
     ("kwargs", "message"),
     [
