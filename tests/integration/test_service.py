@@ -137,3 +137,35 @@ def test_rejected_post_closes_connection(service_server):
     assert response.status == 400
     assert response.getheader("Connection") == "close"
     connection.close()
+
+
+def test_unknown_post_route_closes_connection_before_next_request(service_server):
+    connection = HTTPConnection(*service_server.server_address, timeout=2)
+    connection.request(
+        "POST",
+        "/unknown",
+        body=b'{"tool":"course.echo","input":{"message":"leftover"}}',
+        headers={"Content-Type": "application/json"},
+    )
+    response = connection.getresponse()
+    response.read()
+    assert response.status == 404
+    assert response.getheader("Connection") == "close"
+    connection.close()
+
+
+def test_duplicate_content_length_is_rejected(service_server):
+    connection = HTTPConnection(*service_server.server_address, timeout=2)
+    connection.connect()
+    body = b'{"tool":"course.echo","input":{"message":"hello"}}'
+    connection.putrequest("POST", "/v1/tools/execute")
+    connection.putheader("Content-Type", "application/json")
+    connection.putheader("Content-Length", str(len(body)))
+    connection.putheader("Content-Length", str(len(body)))
+    connection.endheaders(body)
+    response = connection.getresponse()
+    result = json.loads(response.read())
+    connection.close()
+
+    assert response.status == 400
+    assert result["error"] == "invalid_request"

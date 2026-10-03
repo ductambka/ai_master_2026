@@ -55,6 +55,9 @@ def _validate_request_framing(headers: Any) -> None:
         raise RequestValidationError("Content-Type must be application/json")
     if headers.get("Transfer-Encoding"):
         raise RequestValidationError("Transfer-Encoding is not supported")
+    content_lengths = headers.get_all("Content-Length", [])
+    if len(content_lengths) != 1:
+        raise RequestValidationError("exactly one Content-Length is required")
 
 
 def _execute_tool(payload: dict[str, Any]) -> dict[str, Any]:
@@ -126,6 +129,8 @@ class ServiceHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802 - stdlib handler API
         request_id = _request_id(self.headers.get("X-Request-ID"))
         if self.path != "/v1/tools/execute":
+            # Do not leave an unconsumed body on a persistent connection.
+            self.close_connection = True
             self._send(HTTPStatus.NOT_FOUND, {"error": "not_found"}, request_id)
             return
         content_length = self.headers.get("Content-Length")
