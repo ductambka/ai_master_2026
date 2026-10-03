@@ -70,5 +70,11 @@ def test_retriever_returns_relevant_document_and_handles_unicode():
         retriever.search("query", k=0)
     with pytest.raises(ValueError, match="non-empty"):
         TfidfRetriever([])
+    with pytest.raises(ValueError, match="non-empty strings"):
+        TfidfRetriever(["valid document", "  "])
     with pytest.raises(ValueError, match="string"):
         retriever.search(3)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="non-empty string"):
+        retriever.search("   ")
+    with pytest.raises(ValueError, match="string"):
+        tokenize(None)  # type: ignore[arg-type]

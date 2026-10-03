@@ -10,6 +10,8 @@ TOKEN = re.compile(r"[\wÀ-ỹ]+", re.UNICODE)
 
 
 def tokenize(text: str) -> list[str]:
+    if not isinstance(text, str):
+        raise ValueError("text must be a string")
     return [token.lower() for token in TOKEN.findall(text)]
 
 
@@ -20,8 +22,8 @@ class TfidfRetriever:
     def __post_init__(self) -> None:
         if not isinstance(self.documents, list) or not self.documents:
             raise ValueError("documents must be a non-empty list")
-        if any(not isinstance(document, str) for document in self.documents):
-            raise ValueError("documents must contain only strings")
+        if any(not isinstance(document, str) or not document.strip() for document in self.documents):
+            raise ValueError("documents must contain only non-empty strings")
         self.term_counts = [Counter(tokenize(doc)) for doc in self.documents]
         self.document_frequency = Counter(term for counts in self.term_counts for term in counts)
 
@@ -30,8 +32,8 @@ class TfidfRetriever:
         return {term: (count / total) * math.log((1 + len(self.documents)) / (1 + self.document_frequency[term])) for term, count in counts.items()}
 
     def search(self, query: str, k: int = 3) -> list[tuple[int, float]]:
-        if not isinstance(query, str):
-            raise ValueError("query must be a string")
+        if not isinstance(query, str) or not query.strip():
+            raise ValueError("query must be a non-empty string")
         if not isinstance(k, int) or isinstance(k, bool) or k < 1:
             raise ValueError("k must be a positive integer")
         query_vector = self._vector(Counter(tokenize(query)))
