@@ -132,6 +132,7 @@ class ServiceHandler(BaseHTTPRequestHandler):
             # Do not leave an unconsumed body on a persistent connection.
             self.close_connection = True
             self._send(HTTPStatus.NOT_FOUND, {"error": "not_found"}, request_id)
+            self._log("http_request", request_id, method="POST", path=self.path, status=HTTPStatus.NOT_FOUND.value)
             return
         content_length = self.headers.get("Content-Length")
         try:

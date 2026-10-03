@@ -168,6 +168,23 @@ def test_unknown_post_route_closes_connection_before_next_request(service_server
     connection.close()
 
 
+def test_unknown_post_route_is_audited_without_logging_body(service_server, caplog):
+    caplog.set_level(logging.INFO, logger="course_reference_service")
+    status, _, body = request(
+        service_server,
+        "POST",
+        "/unknown",
+        {"tool": "course.echo", "input": {"message": "do-not-log-this"}},
+    )
+
+    assert status == 404
+    assert body["error"] == "not_found"
+    assert '"event": "http_request"' in caplog.text
+    assert '"method": "POST"' in caplog.text
+    assert '"status": 404' in caplog.text
+    assert "do-not-log-this" not in caplog.text
+
+
 def test_duplicate_content_length_is_rejected(service_server):
     connection = HTTPConnection(*service_server.server_address, timeout=2)
     connection.connect()
