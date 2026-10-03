@@ -102,3 +102,18 @@ def test_non_numeric_content_length_is_rejected_as_bad_request(service_server):
 
     assert response.status == 400
     assert body["error"] == "invalid_request"
+
+
+def test_rejected_post_closes_connection(service_server):
+    connection = HTTPConnection(*service_server.server_address, timeout=2)
+    connection.request(
+        "POST",
+        "/v1/tools/execute",
+        body=b"{}",
+        headers={"Content-Type": "application/json", "Content-Length": "100000"},
+    )
+    response = connection.getresponse()
+    response.read()
+    assert response.status == 400
+    assert response.getheader("Connection") == "close"
+    connection.close()

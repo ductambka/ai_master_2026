@@ -15,8 +15,33 @@ from typing import Any
 def load_config(path: Path) -> dict[str, Any]:
     with path.open(encoding="utf-8") as handle:
         config = json.load(handle)
-    if not config.get("dataset") or not config.get("acceptance"):
-        raise ValueError("config must contain dataset and acceptance")
+    if not isinstance(config, dict):
+        raise ValueError("config must be a JSON object")
+    if not isinstance(config.get("name"), str) or not config["name"].strip():
+        raise ValueError("config.name must be a non-empty string")
+    if not isinstance(config.get("seed"), int) or isinstance(config["seed"], bool):
+        raise ValueError("config.seed must be an integer")
+    dataset = config.get("dataset")
+    if not isinstance(dataset, list) or not dataset:
+        raise ValueError("config.dataset must be a non-empty list")
+    width = None
+    for index, row in enumerate(dataset):
+        if not isinstance(row, dict) or not isinstance(row.get("label"), str) or not row["label"].strip():
+            raise ValueError(f"config.dataset[{index}] must contain a non-empty string label")
+        features = row.get("features")
+        if not isinstance(features, list) or not features:
+            raise ValueError(f"config.dataset[{index}].features must be a non-empty list")
+        if width is None:
+            width = len(features)
+        if len(features) != width or any(
+            isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value)
+            for value in features
+        ):
+            raise ValueError("config.dataset features must be finite numeric rows of equal width")
+    acceptance = config.get("acceptance")
+    minimum = acceptance.get("min_accuracy") if isinstance(acceptance, dict) else None
+    if isinstance(minimum, bool) or not isinstance(minimum, (int, float)) or not math.isfinite(minimum) or not 0 <= minimum <= 1:
+        raise ValueError("config.acceptance.min_accuracy must be between 0 and 1")
     return config
 
 

@@ -37,6 +37,10 @@ Runner tạo:
 - `manifest.json`: đường dẫn tương đối, SHA-256 của metrics, cấu hình đã
   dùng, kết quả nghiệm thu và thời điểm UTC.
 
+Runner kiểm tra trước khi chạy rằng config có tên/seed hợp lệ, dataset không
+rỗng với các hàng số hữu hạn cùng chiều, và ngưỡng accuracy nằm trong `[0, 1]`.
+Config sai bị từ chối bằng `ValueError` thay vì tạo artifact không đáng tin.
+
 Lab có thể được mở rộng bằng cách thay `run()` bằng pipeline thật, nhưng vẫn
 giữ hợp đồng artifact và manifest. Không đưa secret vào config hoặc artifact.
 

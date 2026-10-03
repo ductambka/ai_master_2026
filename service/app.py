@@ -95,6 +95,8 @@ class ServiceHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(encoded)))
         self.send_header("X-Request-ID", request_id)
         self.send_header("Cache-Control", "no-store")
+        if self.close_connection:
+            self.send_header("Connection", "close")
         self.end_headers()
         self.wfile.write(encoded)
 
@@ -127,10 +129,15 @@ class ServiceHandler(BaseHTTPRequestHandler):
             payload = _json_body(self.rfile.read(length))
             result = _execute_tool(payload)
         except PermissionError as exc:
+            # Do not leave an unread request body on a persistent connection.
+            # Closing the connection prevents the next request from being
+            # parsed from attacker-controlled leftovers.
+            self.close_connection = True
             self._send(HTTPStatus.FORBIDDEN, {"error": "tool_not_allowed", "detail": str(exc)}, request_id)
             self._log("tool_denied", request_id, method="POST", path=self.path, payload=payload if "payload" in locals() else {})
             return
         except RequestValidationError as exc:
+            self.close_connection = True
             self._send(HTTPStatus.BAD_REQUEST, {"error": "invalid_request", "detail": str(exc)}, request_id)
             self._log("request_rejected", request_id, method="POST", path=self.path, reason=str(exc))
             return
