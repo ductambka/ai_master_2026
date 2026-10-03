@@ -72,3 +72,10 @@ def test_power_rejects_invalid_exponents_and_zero_domain():
         Value(2.0) ** float("inf")
     with pytest.raises(ValueError, match="non-positive"):
         Value(0.0) ** 0.0
+
+
+def test_power_and_exp_reject_non_finite_real_domain_results():
+    with pytest.raises(ValueError, match="negative base"):
+        Value(-1.0) ** 0.5
+    with pytest.raises(ValueError, match="finite"):
+        exp(Value(1000.0))
