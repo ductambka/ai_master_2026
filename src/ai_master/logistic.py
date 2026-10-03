@@ -68,8 +68,10 @@ class LogisticRegression:
         return self
 
     def predict_proba_one(self, row: list[float]) -> float:
-        if not self.weights or len(row) != len(self.weights):
+        if not self.weights:
             raise ValueError("model is not fitted or feature count is wrong")
+        if not isinstance(row, list) or len(row) != len(self.weights):
+            raise ValueError("row must be a list with the fitted feature count")
         if any(
             not isinstance(value, (int, float))
             or isinstance(value, bool)
@@ -84,4 +86,6 @@ class LogisticRegression:
             raise ValueError("threshold must be between 0 and 1")
         if not isinstance(x, list):
             raise ValueError("x must be a list of rows")
+        if any(not isinstance(row, list) for row in x):
+            raise ValueError("x must contain only rows represented as lists")
         return [int(self.predict_proba_one(row) >= threshold) for row in x]

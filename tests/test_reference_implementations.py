@@ -34,8 +34,14 @@ def test_logistic_regression_rejects_invalid_training_parameters():
 
 def test_logistic_regression_rejects_non_finite_prediction_features():
     model = LogisticRegression().fit([[0.0], [1.0]], [0, 1])
+    with pytest.raises(ValueError, match="row must be a list"):
+        model.predict_proba_one(None)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="row must be a list"):
+        model.predict_proba_one((0.0,))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="finite numeric"):
         model.predict_proba_one([float("inf")])
+    with pytest.raises(ValueError, match="only rows"):
+        model.predict([None])  # type: ignore[list-item]
     with pytest.raises(ValueError, match="between 0 and 1"):
         model.predict([[0.0]], threshold=float("nan"))
 
