@@ -45,6 +45,9 @@ def test_logistic_regression_rejects_non_finite_prediction_features():
     with pytest.raises(ValueError, match="between 0 and 1"):
         model.predict([[0.0]], threshold=float("nan"))
 
+    with pytest.raises(ValueError, match="not fitted"):
+        LogisticRegression().predict([])
+
 
 def test_metrics_and_input_validation():
     assert macro_f1([0, 1, 1], [0, 1, 0]) == pytest.approx(0.666666, rel=1e-4)

@@ -84,6 +84,8 @@ class LogisticRegression:
     def predict(self, x: list[list[float]], threshold: float = 0.5) -> list[int]:
         if not isinstance(threshold, (int, float)) or isinstance(threshold, bool) or not math.isfinite(threshold) or not 0 < threshold < 1:
             raise ValueError("threshold must be between 0 and 1")
+        if not self.weights:
+            raise ValueError("model is not fitted or feature count is wrong")
         if not isinstance(x, list):
             raise ValueError("x must be a list of rows")
         if any(not isinstance(row, list) for row in x):
