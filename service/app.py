@@ -118,7 +118,10 @@ class ServiceHandler(BaseHTTPRequestHandler):
             return
         content_length = self.headers.get("Content-Length")
         try:
-            length = int(content_length or "-1")
+            try:
+                length = int(content_length or "-1")
+            except (TypeError, ValueError) as exc:
+                raise RequestValidationError("invalid or oversized Content-Length") from exc
             if length < 0 or length > MAX_BODY_BYTES:
                 raise RequestValidationError("invalid or oversized Content-Length")
             payload = _json_body(self.rfile.read(length))

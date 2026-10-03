@@ -86,3 +86,19 @@ def test_oversized_body_and_invalid_request_id_are_rejected_or_replaced(service_
     assert status == 200
     assert body["status"] == "ok"
     assert dict(headers)["X-Request-ID"] != "contains spaces"
+
+
+def test_non_numeric_content_length_is_rejected_as_bad_request(service_server):
+    connection = HTTPConnection(*service_server.server_address, timeout=2)
+    connection.request(
+        "POST",
+        "/v1/tools/execute",
+        body=b"{}",
+        headers={"Content-Type": "application/json", "Content-Length": "not-a-number"},
+    )
+    response = connection.getresponse()
+    body = json.loads(response.read())
+    connection.close()
+
+    assert response.status == 400
+    assert body["error"] == "invalid_request"
