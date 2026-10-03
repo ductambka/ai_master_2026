@@ -12,6 +12,8 @@ Gold records có `relevant_ids` và các claim chuẩn; prediction records có c
 `id`, danh sách xếp hạng `retrieved_ids`, và claim/citation do provider sinh.
 Claim citation được coi là được hỗ trợ khi citation dự đoán giao với citation
 gold của claim khớp.
+Mỗi claim gold chỉ được ghép một lần trong từng metric; output lặp cùng một
+claim không thể làm tăng số claim gold được bao phủ.
 
 ## Chạy
 

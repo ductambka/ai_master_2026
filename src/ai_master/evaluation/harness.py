@@ -94,6 +94,8 @@ def evaluate_records(
     """Evaluate provider output against a gold set using deterministic lexical metrics."""
     if not isinstance(k, int) or isinstance(k, bool) or k < 1:
         raise EvaluationError("k must be at least 1")
+    if not isinstance(seed, int) or isinstance(seed, bool):
+        raise EvaluationError("seed must be an integer")
     if (
         not isinstance(semantic_threshold, (int, float))
         or isinstance(semantic_threshold, bool)
@@ -124,28 +126,41 @@ def evaluate_records(
         recall_values.append(len(relevant.intersection(retrieved)) / len(relevant) if relevant else 0.0)
 
         gold_claims = gold["claims"]
-        exact_map = {_normalise(claim["text"]): claim for claim in gold_claims}
+        exact_matches: set[int] = set()
+        semantic_matches: set[int] = set()
         for claim in prediction["claims"]:
             total_claims += 1
             predicted_citations = set(claim["citation_ids"])
-            exact = exact_map.get(_normalise(claim["text"]))
-            if exact is not None:
+            exact_index = next(
+                (
+                    index
+                    for index, gold_claim in enumerate(gold_claims)
+                    if index not in exact_matches
+                    and _normalise(gold_claim["text"]) == _normalise(claim["text"])
+                ),
+                None,
+            )
+            if exact_index is not None:
+                exact_matches.add(exact_index)
                 exact_total += 1
-                exact_covered += bool(predicted_citations.intersection(exact["citation_ids"]))
+                exact_covered += bool(predicted_citations.intersection(gold_claims[exact_index]["citation_ids"]))
 
-            candidate = None
+            candidate: tuple[float, int, dict[str, Any]] | None = None
             predicted_tokens = _tokens(claim["text"])
-            for gold_claim in gold_claims:
+            for index, gold_claim in enumerate(gold_claims):
+                if index in semantic_matches:
+                    continue
                 gold_tokens = _tokens(gold_claim["text"])
                 union = predicted_tokens | gold_tokens
                 score = len(predicted_tokens & gold_tokens) / len(union) if union else 1.0
                 if score >= semantic_threshold and (candidate is None or score > candidate[0]):
-                    candidate = (score, gold_claim)
+                    candidate = (score, index, gold_claim)
             if candidate is not None:
+                semantic_matches.add(candidate[1])
                 semantic_total += 1
-                matched = candidate[1]
+                matched = candidate[2]
                 semantic_covered += bool(predicted_citations.intersection(matched["citation_ids"]))
-            if candidate is None or not predicted_citations.intersection(candidate[1]["citation_ids"]):
+            if candidate is None or not predicted_citations.intersection(candidate[2]["citation_ids"]):
                 unsupported += 1
 
     return {

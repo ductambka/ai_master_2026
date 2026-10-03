@@ -30,6 +30,27 @@ def test_empty_inputs_are_valid_and_return_zero_metrics():
     assert result["metrics"]["unsupported_claim_rate"] == 0.0
 
 
+def test_repeated_prediction_claims_do_not_reuse_one_gold_claim():
+    gold = [{"id": "q1", "relevant_ids": ["d1"], "claims": [{"text": "A fact", "citation_ids": ["d1"]}]}]
+    predictions = [
+        {
+            "id": "q1",
+            "retrieved_ids": ["d1"],
+            "claims": [
+                {"text": "A fact", "citation_ids": ["d1"]},
+                {"text": "A fact", "citation_ids": ["d1"]},
+            ],
+        }
+    ]
+
+    metrics = evaluate_records(gold, predictions)["metrics"]
+
+    assert metrics["citation_coverage"]["exact"] == {"covered": 1, "total": 1, "value": 1.0}
+    assert metrics["citation_coverage"]["semantic_lite"]["covered"] == 1
+    assert metrics["citation_coverage"]["semantic_lite"]["total"] == 1
+    assert metrics["unsupported_claim_rate"] == pytest.approx(0.5)
+
+
 @pytest.mark.parametrize(
     ("kwargs", "message"),
     [
@@ -39,6 +60,7 @@ def test_empty_inputs_are_valid_and_return_zero_metrics():
         ({"semantic_threshold": True}, "semantic_threshold must be between 0 and 1"),
         ({"semantic_threshold": float("nan")}, "semantic_threshold must be between 0 and 1"),
         ({"semantic_threshold": float("inf")}, "semantic_threshold must be between 0 and 1"),
+        ({"seed": True}, "seed must be an integer"),
     ],
 )
 def test_evaluator_rejects_invalid_metric_parameters(kwargs, message):
