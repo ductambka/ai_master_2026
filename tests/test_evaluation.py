@@ -126,3 +126,27 @@ def test_cli_output_is_json(tmp_path):
     )
     assert result.returncode == 0, result.stderr
     assert json.loads(output.read_text(encoding="utf-8"))["version"] == "1.0"
+
+
+def test_cli_reports_output_write_errors_without_traceback(tmp_path):
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ai_master.cli",
+            "evaluate",
+            "--gold",
+            str(FIXTURE / "gold.jsonl"),
+            "--predictions",
+            str(FIXTURE / "predictions.jsonl"),
+            "--output",
+            str(tmp_path / "missing" / "result.json"),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PYTHONPATH": str(Path(__file__).parents[1] / "src")},
+    )
+    assert result.returncode == 2
+    assert "cannot write evaluation output" in result.stderr
+    assert "Traceback" not in result.stderr

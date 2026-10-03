@@ -63,9 +63,12 @@ def main() -> None:
             result = evaluate_files(args.gold, args.predictions, k=args.k, seed=args.seed, semantic_threshold=args.semantic_threshold)
         except (EvaluationError, OSError) as exc:
             parser.error(str(exc))
-        with open(args.output, "w", encoding="utf-8") as output:
-            json.dump(result, output, indent=2, sort_keys=True)
-            output.write("\n")
+        try:
+            with open(args.output, "w", encoding="utf-8") as output:
+                json.dump(result, output, indent=2, sort_keys=True)
+                output.write("\n")
+        except OSError as exc:
+            parser.error(f"cannot write evaluation output: {exc}")
         print(json.dumps(result, sort_keys=True))
 
 
