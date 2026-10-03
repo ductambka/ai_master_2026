@@ -24,6 +24,13 @@ def test_logistic_regression_rejects_invalid_training_parameters():
     with pytest.raises(ValueError, match="binary labels"):
         LogisticRegression().fit([[0.0], [1.0]], [False, True])
 
+    with pytest.raises(ValueError, match="rectangular matrix"):
+        LogisticRegression().fit([None], [0])  # type: ignore[list-item]
+    with pytest.raises(ValueError, match="lists"):
+        LogisticRegression().fit(((0.0,), (1.0,)), [0, 1])  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="lists"):
+        LogisticRegression().fit([[0.0], [1.0]], (0, 1))  # type: ignore[arg-type]
+
 
 def test_logistic_regression_rejects_non_finite_prediction_features():
     model = LogisticRegression().fit([[0.0], [1.0]], [0, 1])

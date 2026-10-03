@@ -34,7 +34,11 @@ class LogisticRegression:
             raise ValueError("epochs must be a positive integer")
         if not math.isfinite(self.l2) or self.l2 < 0:
             raise ValueError("l2 must be a non-negative finite number")
-        if not x or len(x) != len(y) or not x[0] or any(len(row) != len(x[0]) for row in x):
+        if not isinstance(x, list) or not isinstance(y, list):
+            raise ValueError("x and y must be lists")
+        if not x or len(x) != len(y) or not isinstance(x[0], list) or not x[0] or any(
+            not isinstance(row, list) or len(row) != len(x[0]) for row in x
+        ):
             raise ValueError("x must be a non-empty rectangular matrix matching y")
         if any(
             not isinstance(value, (int, float))
