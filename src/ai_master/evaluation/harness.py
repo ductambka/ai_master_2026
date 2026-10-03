@@ -91,9 +91,13 @@ def evaluate_records(
     semantic_threshold: float = 0.5,
 ) -> dict[str, Any]:
     """Evaluate provider output against a gold set using deterministic lexical metrics."""
-    if k < 1:
+    if not isinstance(k, int) or isinstance(k, bool) or k < 1:
         raise EvaluationError("k must be at least 1")
-    if not 0 <= semantic_threshold <= 1:
+    if (
+        not isinstance(semantic_threshold, (int, float))
+        or isinstance(semantic_threshold, bool)
+        or not 0 <= semantic_threshold <= 1
+    ):
         raise EvaluationError("semantic_threshold must be between 0 and 1")
     for index, record in enumerate(gold_records):
         _validate_gold(record, f"gold[{index}]")

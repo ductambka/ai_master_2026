@@ -30,6 +30,47 @@ def test_empty_inputs_are_valid_and_return_zero_metrics():
     assert result["metrics"]["unsupported_claim_rate"] == 0.0
 
 
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"k": 0}, "k must be at least 1"),
+        ({"k": True}, "k must be at least 1"),
+        ({"semantic_threshold": -0.1}, "semantic_threshold must be between 0 and 1"),
+        ({"semantic_threshold": True}, "semantic_threshold must be between 0 and 1"),
+    ],
+)
+def test_evaluator_rejects_invalid_metric_parameters(kwargs, message):
+    with pytest.raises(EvaluationError, match=message):
+        evaluate_records([], [], **kwargs)
+
+
+def test_cli_rejects_invalid_metric_parameters_without_traceback(tmp_path):
+    output = tmp_path / "result.json"
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ai_master.cli",
+            "evaluate",
+            "--gold",
+            str(FIXTURE / "gold.jsonl"),
+            "--predictions",
+            str(FIXTURE / "predictions.jsonl"),
+            "--output",
+            str(output),
+            "--k",
+            "0",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PYTHONPATH": str(Path(__file__).parents[1] / "src")},
+    )
+    assert result.returncode == 2
+    assert "must be a positive integer" in result.stderr
+    assert "Traceback" not in result.stderr
+
+
 def test_malformed_input_is_rejected(tmp_path):
     gold = tmp_path / "gold.jsonl"
     predictions = tmp_path / "predictions.jsonl"

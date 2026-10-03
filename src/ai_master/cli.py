@@ -3,10 +3,24 @@ from __future__ import annotations
 import argparse
 import json
 
+from .evaluation import EvaluationError, evaluate_files
 from .logistic import LogisticRegression
 from .metrics import accuracy
 from .retrieval import TfidfRetriever
-from .evaluation import evaluate_files
+
+
+def _positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return parsed
+
+
+def _unit_interval(value: str) -> float:
+    parsed = float(value)
+    if not 0 <= parsed <= 1:
+        raise argparse.ArgumentTypeError("must be between 0 and 1")
+    return parsed
 
 
 def demo() -> None:
@@ -34,9 +48,9 @@ def main() -> None:
     evaluate_parser.add_argument("--gold", required=True, type=str)
     evaluate_parser.add_argument("--predictions", required=True, type=str)
     evaluate_parser.add_argument("--output", required=True, type=str)
-    evaluate_parser.add_argument("--k", type=int, default=3)
+    evaluate_parser.add_argument("--k", type=_positive_int, default=3)
     evaluate_parser.add_argument("--seed", type=int, default=0)
-    evaluate_parser.add_argument("--semantic-threshold", type=float, default=0.5)
+    evaluate_parser.add_argument("--semantic-threshold", type=_unit_interval, default=0.5)
     args = parser.parse_args()
     if args.command == "demo":
         demo()
@@ -45,7 +59,10 @@ def main() -> None:
             parser.error("--epochs must be a positive integer")
         train(args.epochs)
     else:
-        result = evaluate_files(args.gold, args.predictions, k=args.k, seed=args.seed, semantic_threshold=args.semantic_threshold)
+        try:
+            result = evaluate_files(args.gold, args.predictions, k=args.k, seed=args.seed, semantic_threshold=args.semantic_threshold)
+        except (EvaluationError, OSError) as exc:
+            parser.error(str(exc))
         with open(args.output, "w", encoding="utf-8") as output:
             json.dump(result, output, indent=2, sort_keys=True)
             output.write("\n")
