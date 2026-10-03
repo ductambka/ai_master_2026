@@ -29,7 +29,7 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("demo")
     train_parser = subparsers.add_parser("train")
-    train_parser.add_argument("--epochs", type=int, default=100)
+    train_parser.add_argument("--epochs", type=int, default=100, metavar="N", help="positive number of training epochs")
     evaluate_parser = subparsers.add_parser("evaluate", help="evaluate provider output against a JSONL gold set")
     evaluate_parser.add_argument("--gold", required=True, type=str)
     evaluate_parser.add_argument("--predictions", required=True, type=str)
@@ -41,6 +41,8 @@ def main() -> None:
     if args.command == "demo":
         demo()
     elif args.command == "train":
+        if args.epochs < 1:
+            parser.error("--epochs must be a positive integer")
         train(args.epochs)
     else:
         result = evaluate_files(args.gold, args.predictions, k=args.k, seed=args.seed, semantic_threshold=args.semantic_threshold)

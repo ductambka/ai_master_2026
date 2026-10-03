@@ -69,3 +69,20 @@ def test_schema_validation_and_redacted_structured_log(service_server, caplog):
     assert body["error"] == "invalid_request"
     assert "do-not-log" not in caplog.text
     assert '"event": "request_rejected"' in caplog.text
+
+
+def test_oversized_body_and_invalid_request_id_are_rejected_or_replaced(service_server):
+    oversized = {"tool": "course.echo", "input": {"message": "x" * 100_000}}
+    status, _, body = request(service_server, "POST", "/v1/tools/execute", oversized)
+    assert status == 400
+    assert body["error"] == "invalid_request"
+
+    status, headers, body = request(
+        service_server,
+        "GET",
+        "/healthz",
+        headers={"X-Request-ID": "contains spaces"},
+    )
+    assert status == 200
+    assert body["status"] == "ok"
+    assert dict(headers)["X-Request-ID"] != "contains spaces"

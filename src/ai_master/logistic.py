@@ -28,6 +28,12 @@ class LogisticRegression:
     history: list[float] = field(default_factory=list)
 
     def fit(self, x: list[list[float]], y: list[int]) -> "LogisticRegression":
+        if not math.isfinite(self.learning_rate) or self.learning_rate <= 0:
+            raise ValueError("learning_rate must be a positive finite number")
+        if not isinstance(self.epochs, int) or isinstance(self.epochs, bool) or self.epochs < 1:
+            raise ValueError("epochs must be a positive integer")
+        if not math.isfinite(self.l2) or self.l2 < 0:
+            raise ValueError("l2 must be a non-negative finite number")
         if not x or len(x) != len(y) or any(len(row) != len(x[0]) for row in x):
             raise ValueError("x must be a non-empty rectangular matrix matching y")
         if any(label not in (0, 1) for label in y):
@@ -58,4 +64,3 @@ class LogisticRegression:
         if not 0 < threshold < 1:
             raise ValueError("threshold must be between 0 and 1")
         return [int(self.predict_proba_one(row) >= threshold) for row in x]
-
