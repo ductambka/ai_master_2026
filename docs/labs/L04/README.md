@@ -22,6 +22,10 @@ phương thức lẫn hàm). Graph có nhánh được xử lý bằng cách c�
 khi một node được dùng nhiều lần. `log(x)` yêu cầu `x > 0` và ném `ValueError`
 ngoài miền xác định.
 
+Mỗi lần gọi `backward()` sẽ đặt lại gradient của các node trong graph trước
+khi lan truyền ngược; vì vậy gọi lại trên cùng output cho cùng kết quả, còn
+các nhánh dùng chung trong một lần chạy vẫn được cộng dồn đúng.
+
 ```python
 from ai_master.autograd import Value, exp, log
 

@@ -16,6 +16,9 @@ def test_logistic_regression_rejects_invalid_training_parameters():
         with pytest.raises(ValueError):
             LogisticRegression(**parameter).fit([[0.0], [1.0]], [0, 1])
 
+    with pytest.raises(ValueError, match="rectangular"):
+        LogisticRegression().fit([[], []], [0, 1])
+
 
 def test_metrics_and_input_validation():
     assert macro_f1([0, 1, 1], [0, 1, 0]) == pytest.approx(0.666666, rel=1e-4)

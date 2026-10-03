@@ -41,6 +41,17 @@ def test_reverse_operations_and_shared_subgraph():
     assert x.grad == pytest.approx(8.0)
 
 
+def test_repeated_backward_resets_intermediate_gradients():
+    x = Value(2.0)
+    shared = x * x
+    output = shared + shared
+
+    output.backward()
+    assert x.grad == pytest.approx(8.0)
+    output.backward()
+    assert x.grad == pytest.approx(8.0)
+
+
 def test_log_rejects_non_positive_values():
     with pytest.raises(ValueError, match="positive"):
         log(Value(0.0))

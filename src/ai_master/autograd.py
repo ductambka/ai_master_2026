@@ -110,7 +110,14 @@ class Value:
         return out
 
     def backward(self) -> None:
-        """Accumulate derivatives from this value to all graph leaves."""
+        """Compute derivatives from this value to all graph leaves.
+
+        Gradients are reset for every node reachable from ``self`` before the
+        reverse pass. This makes repeated calls deterministic and prevents a
+        shared intermediate node from propagating stale gradient more than
+        once. Gradient contributions from multiple uses of a node within one
+        graph are still accumulated normally.
+        """
         topo: list[Value] = []
         visited: set[Value] = set()
 
@@ -123,6 +130,8 @@ class Value:
             topo.append(node)
 
         build(self)
+        for node in topo:
+            node.grad = 0.0
         self.grad = 1.0
         for node in reversed(topo):
             node._backward()
