@@ -113,7 +113,20 @@
         "Dockerfile": "8bc8a6a3a6c4deec787cc28372c0004a26a1d5e4a0073c06e52883786ba11999"
       },
       "residual_risk": "Sample only: no authentication, TLS, rate limiting, persistent audit store, or production isolation; do not use real data.",
-      "push": "BLOCKED: no git remote configured"
+      "push": "COMPLETED: commit 72c0866 was pushed after the original service implementation",
+      "follow_up_hardening": {
+        "completed_at_utc": "2026-10-03T22:00:00Z",
+        "commit": "b9eec1a",
+        "summary": "LogisticRegression.fit now rejects non-list and non-rectangular training inputs with stable ValueError contracts.",
+        "verification": {
+          "pytest": "40 passed",
+          "compile": "python3 -m compileall -q src service (PASS)",
+          "cli_demo": "python3 -m ai_master.cli demo (PASS)",
+          "cli_train": "python3 -m ai_master.cli train --epochs 25 (PASS)",
+          "cli_invalid_epochs": "python3 -m ai_master.cli train --epochs 0 (exit 2, expected error, no traceback)",
+          "diff_check": "git diff --check (PASS)"
+        }
+      }
     }
   }
 ]
