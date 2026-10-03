@@ -6,7 +6,28 @@
     "extra_prompt": "Phạm vi: docs/labs, examples, tests và tooling trong repository. Acceptance: tạo template lab gồm README, run script, config seed, output manifest và test; chạy được từ môi trường sạch; không thêm secret. Dependency: none. Verification: python -m compileall src; pytest -q; chạy ít nhất một template. Risk: không thay đổi API hiện có; rollback bằng revert commit. Cập nhật durable state bằng report nêu file, lệnh, exit code và artifact.",
     "dependencies": [],
     "priority": 110,
-    "job_status": "queued"
+    "job_status": "completed",
+    "result": {
+      "completed_at_utc": "2026-10-03T19:27:06Z",
+      "verification": {
+        "compile": "python3 -m compileall -q src service (PASS)",
+        "full_suite": "pytest -q (16 passed)",
+        "template": "./tooling/run_lab_template.sh (PASS; accuracy 1.0; seed 7)",
+        "evaluation_cli": "PYTHONPATH=src python3 -m ai_master.cli evaluate --gold docs/labs/L07/fixtures/gold.jsonl --predictions docs/labs/L07/fixtures/predictions.jsonl --output /tmp/ai-master-evaluation.json (PASS)",
+        "docker_build": "docker build -t ai-master-course-service:review . (PASS)",
+        "docker_smoke": "container /healthz and course.echo returned expected JSON (PASS)",
+        "diff_check": "git diff --check (PASS)"
+      },
+      "artifact_sha256": {
+        "examples/lab_template/run_lab.py": "c514f7266b8be79122f238b86d7caabb9d2f8343f40ca404d60d84aa7f816a32",
+        "examples/lab_template/config.json": "14766db7e47e9d2f3ae5455a39afc2a20e8a0c54cd5d2df91af243420880babf",
+        "examples/lab_template/README.md": "bbd12ab3501423924167953d7a26e5381d574a30374337c45dbf0b53739b7d11",
+        "tests/test_lab_template.py": "ddd44ea15e645726024e9579a67a39ee3153ea65e7b62a3064142ee11a9fdff1",
+        "tooling/run_lab_template.sh": "e3e05d28d33e3b6ba9d28acdd22f0ccc91276030ea1e7f38e47bd390be5b3196"
+      },
+      "residual_risk": "Template baseline uses a tiny synthetic dataset and is instructional, not evidence of production model quality; Docker image remains a local demonstration without authentication, TLS, rate limiting or persistent audit storage.",
+      "deployment": "not applicable; teaching template, library, tests and documentation change"
+    }
   },
   {
     "internal_id": "ai_master_002",
@@ -41,7 +62,30 @@
     "extra_prompt": "Phạm vi: src/ai_master/evaluation, tests, docs/labs/L07. Acceptance: đọc gold JSONL, tính recall@k, exact/semantic-lite citation coverage, unsupported-claim rate; output JSON có version, seed và input checksum; test empty/malformed input. Dependency: ai_master_001. Verification: pytest -q; chạy CLI trên fixture. Risk: metric lexical không thay thế đánh giá người; không gọi mạng/API. Rollback bằng revert commit; forward-fix nếu schema thay đổi. Cập nhật durable state và nêu giới hạn validity.",
     "dependencies": ["ai_master_001"],
     "priority": 100,
-    "job_status": "queued"
+    "job_status": "completed",
+    "result": {
+      "completed_at_utc": "2026-10-03T15:49:00Z",
+      "verification": {
+        "target_test": "pytest -q tests/test_evaluation.py",
+        "target_test_result": "4 passed",
+        "full_suite": "pytest -q (16 passed)",
+        "compile": "python3 -m compileall -q src (PASS)",
+        "cli_fixture": "python3 -m ai_master.cli evaluate --gold docs/labs/L07/fixtures/gold.jsonl --predictions docs/labs/L07/fixtures/predictions.jsonl --output /tmp/ai-master-evaluation.json (PASS)",
+        "fixture_metrics": {
+          "recall_at_k": 1.0,
+          "exact_citation_coverage": 0.5,
+          "semantic_lite_citation_coverage": 0.6666666666666666,
+          "unsupported_claim_rate": 0.5
+        }
+      },
+      "artifact_sha256": {
+        "src/ai_master/evaluation/harness.py": "ff7fe47eb8dc220f860bf21c99304d9f7a61fb4dc524bb580468e24930f1d5c2",
+        "tests/test_evaluation.py": "863d74ae903531fbba8353122f8440b353d4aaeb4777fd2977aa5ef840863ab2",
+        "docs/labs/L07/README.md": "de78ec9584e02acaada81ea21df1c4ef750253010679fb01dd1b8128b99050a5"
+      },
+      "residual_risk": "Lexical and semantic-lite metrics are deterministic teaching metrics, not a substitute for human evaluation or production RAG quality assessment.",
+      "deployment": "not applicable; library, tests and documentation change"
+    }
   },
   {
     "internal_id": "ai_master_004",
