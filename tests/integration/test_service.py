@@ -104,6 +104,26 @@ def test_non_numeric_content_length_is_rejected_as_bad_request(service_server):
     assert body["error"] == "invalid_request"
 
 
+@pytest.mark.parametrize(
+    "headers",
+    [
+        {"Content-Type": "text/plain"},
+        {"Content-Type": "application/json", "Transfer-Encoding": "chunked"},
+    ],
+)
+def test_unsupported_request_framing_is_rejected(service_server, headers):
+    status, _, body = request(
+        service_server,
+        "POST",
+        "/v1/tools/execute",
+        {"tool": "course.echo", "input": {"message": "hello"}},
+        headers=headers,
+    )
+
+    assert status == 400
+    assert body["error"] == "invalid_request"
+
+
 def test_rejected_post_closes_connection(service_server):
     connection = HTTPConnection(*service_server.server_address, timeout=2)
     connection.request(

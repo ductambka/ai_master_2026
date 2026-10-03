@@ -47,6 +47,16 @@ def _json_body(raw: bytes) -> dict[str, Any]:
     return value
 
 
+def _validate_request_framing(headers: Any) -> None:
+    """Require the single JSON framing mode understood by this service."""
+    content_type = headers.get("Content-Type", "")
+    media_type = content_type.split(";", 1)[0].strip().lower()
+    if media_type != "application/json":
+        raise RequestValidationError("Content-Type must be application/json")
+    if headers.get("Transfer-Encoding"):
+        raise RequestValidationError("Transfer-Encoding is not supported")
+
+
 def _execute_tool(payload: dict[str, Any]) -> dict[str, Any]:
     if set(payload) != {"tool", "input"}:
         raise RequestValidationError("request must contain exactly tool and input")
@@ -120,6 +130,7 @@ class ServiceHandler(BaseHTTPRequestHandler):
             return
         content_length = self.headers.get("Content-Length")
         try:
+            _validate_request_framing(self.headers)
             try:
                 length = int(content_length or "-1")
             except (TypeError, ValueError) as exc:
