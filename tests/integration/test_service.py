@@ -57,6 +57,20 @@ def test_unknown_tool_is_rejected(service_server):
     assert body["error"] == "tool_not_allowed"
 
 
+def test_denied_tool_log_contains_metadata_but_not_untrusted_input(service_server, caplog):
+    caplog.set_level(logging.INFO, logger="course_reference_service")
+    status, _, _ = request(
+        service_server,
+        "POST",
+        "/v1/tools/execute",
+        {"tool": "shell.exec", "input": {"command": "do-not-log-this"}},
+    )
+    assert status == 403
+    assert '"event": "tool_denied"' in caplog.text
+    assert '"tool": "shell.exec"' in caplog.text
+    assert "do-not-log-this" not in caplog.text
+
+
 def test_schema_validation_and_redacted_structured_log(service_server, caplog):
     caplog.set_level(logging.INFO, logger="course_reference_service")
     status, _, body = request(

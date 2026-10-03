@@ -150,7 +150,15 @@ class ServiceHandler(BaseHTTPRequestHandler):
             # parsed from attacker-controlled leftovers.
             self.close_connection = True
             self._send(HTTPStatus.FORBIDDEN, {"error": "tool_not_allowed", "detail": str(exc)}, request_id)
-            self._log("tool_denied", request_id, method="POST", path=self.path, payload=payload if "payload" in locals() else {})
+            # Log only routing metadata. The rejected tool input is untrusted
+            # user data and must not be copied into the audit log.
+            self._log(
+                "tool_denied",
+                request_id,
+                method="POST",
+                path=self.path,
+                tool=payload.get("tool") if "payload" in locals() else None,
+            )
             return
         except RequestValidationError as exc:
             self.close_connection = True
