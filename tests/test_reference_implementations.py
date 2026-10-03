@@ -29,6 +29,8 @@ def test_logistic_regression_rejects_non_finite_prediction_features():
     model = LogisticRegression().fit([[0.0], [1.0]], [0, 1])
     with pytest.raises(ValueError, match="finite numeric"):
         model.predict_proba_one([float("inf")])
+    with pytest.raises(ValueError, match="between 0 and 1"):
+        model.predict([[0.0]], threshold=float("nan"))
 
 
 def test_metrics_and_input_validation():
@@ -36,6 +38,10 @@ def test_metrics_and_input_validation():
     assert rmse([1.0, 3.0], [1.0, 1.0]) == pytest.approx(2**0.5)
     with pytest.raises(ValueError):
         accuracy([], [])
+    with pytest.raises(ValueError, match="integers"):
+        accuracy([1], [True])
+    with pytest.raises(ValueError, match="finite numbers"):
+        rmse([1.0], [float("inf")])
 
 
 def test_retriever_returns_relevant_document_and_handles_unicode():
@@ -44,3 +50,7 @@ def test_retriever_returns_relevant_document_and_handles_unicode():
     assert retriever.search("relevant documents", k=1)[0][0] == 1
     with pytest.raises(ValueError):
         retriever.search("query", k=0)
+    with pytest.raises(ValueError, match="non-empty"):
+        TfidfRetriever([])
+    with pytest.raises(ValueError, match="string"):
+        retriever.search(3)  # type: ignore[arg-type]

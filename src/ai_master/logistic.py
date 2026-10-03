@@ -76,6 +76,8 @@ class LogisticRegression:
         return _sigmoid(self.bias + sum(weight * value for weight, value in zip(self.weights, row)))
 
     def predict(self, x: list[list[float]], threshold: float = 0.5) -> list[int]:
-        if not 0 < threshold < 1:
+        if not isinstance(threshold, (int, float)) or isinstance(threshold, bool) or not math.isfinite(threshold) or not 0 < threshold < 1:
             raise ValueError("threshold must be between 0 and 1")
+        if not isinstance(x, list):
+            raise ValueError("x must be a list of rows")
         return [int(self.predict_proba_one(row) >= threshold) for row in x]
