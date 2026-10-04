@@ -25,6 +25,8 @@ class TfidfRetriever:
         if any(not isinstance(document, str) or not document.strip() for document in self.documents):
             raise ValueError("documents must contain only non-empty strings")
         self.term_counts = [Counter(tokenize(doc)) for doc in self.documents]
+        if any(not counts for counts in self.term_counts):
+            raise ValueError("documents must contain at least one searchable token")
         self.document_frequency = Counter(term for counts in self.term_counts for term in counts)
 
     def _vector(self, counts: Counter[str]) -> dict[str, float]:
@@ -36,7 +38,10 @@ class TfidfRetriever:
             raise ValueError("query must be a non-empty string")
         if not isinstance(k, int) or isinstance(k, bool) or k < 1:
             raise ValueError("k must be a positive integer")
-        query_vector = self._vector(Counter(tokenize(query)))
+        query_counts = Counter(tokenize(query))
+        if not query_counts:
+            raise ValueError("query must contain at least one searchable token")
+        query_vector = self._vector(query_counts)
         query_norm = math.sqrt(sum(value * value for value in query_vector.values())) or 1.0
         scored = []
         for index, counts in enumerate(self.term_counts):
