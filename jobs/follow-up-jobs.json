@@ -183,7 +183,7 @@
         "summary": "Service audit logs are emitted before error responses, removing a response/log ordering race while preserving status codes, payloads, and secret-redaction behavior.",
         "verification": {
           "service_tests": "pytest -q tests/integration/test_service.py (13 passed)",
-          "full_suite": "pytest -q (57 passed)",
+          "full_suite": "pytest -q (55 passed)",
           "repeated_full_suite": "3 consecutive full suites passed",
           "compile": "python3 -m compileall -q src service examples (PASS)",
           "cli_demo": "PYTHONPATH=src python3 -m ai_master.cli demo (PASS)",
