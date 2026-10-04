@@ -57,3 +57,48 @@ def test_lab_config_validation_rejects_invalid_contract(tmp_path, field, value, 
     path.write_text(json.dumps(config), encoding="utf-8")
     with pytest.raises(ValueError, match=message):
         module.load_config(path)
+
+
+def test_lab_cli_reports_invalid_config_without_traceback(tmp_path):
+    config = tmp_path / "config.json"
+    config.write_text("{not-json\n", encoding="utf-8")
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(LAB / "run_lab.py"),
+            "--config",
+            str(config),
+            "--output-dir",
+            str(tmp_path / "output"),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 2
+    assert "JSONDecodeError" not in result.stderr
+    assert "Traceback" not in result.stderr
+    assert "Expecting property name" in result.stderr
+
+
+def test_lab_cli_reports_output_errors_without_traceback(tmp_path):
+    output_path = tmp_path / "output"
+    output_path.write_text("not-a-directory", encoding="utf-8")
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(LAB / "run_lab.py"),
+            "--config",
+            str(LAB / "config.json"),
+            "--output-dir",
+            str(output_path),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 2
+    assert "Traceback" not in result.stderr
+    assert "File exists" in result.stderr

@@ -101,7 +101,10 @@ def main() -> int:
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
-    manifest = run(args.config, args.output_dir)
+    try:
+        manifest = run(args.config, args.output_dir)
+    except (OSError, ValueError) as exc:
+        parser.error(str(exc))
     print(json.dumps(manifest, sort_keys=True))
     return 0 if manifest["status"] == "PASS" else 1
 

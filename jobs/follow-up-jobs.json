@@ -141,6 +141,22 @@
         },
         "residual_risk": "Autograd remains a teaching-only scalar engine; vectorization, performance, and production numerical stability are out of scope.",
         "deployment": "not applicable; library and regression-test change"
+      },
+      "follow_up_hardening_3": {
+        "completed_at_utc": "2026-10-04T00:20:00Z",
+        "summary": "Lab template CLI now converts configuration and artifact I/O failures into concise argparse errors without tracebacks.",
+        "verification": {
+          "target_test": "pytest -q tests/test_lab_template.py (6 passed)",
+          "full_suite": "pytest -q (59 passed)",
+          "compile": "python3 -m compileall -q src service examples (PASS)",
+          "cli_demo": "PYTHONPATH=src python3 -m ai_master.cli demo (PASS)",
+          "cli_train": "PYTHONPATH=src python3 -m ai_master.cli train --epochs 25 (PASS)",
+          "evaluation_fixture": "PYTHONPATH=src python3 -m ai_master.cli evaluate ... (PASS)",
+          "lab_smoke": "./tooling/run_lab_template.sh (PASS; accuracy 1.0; seed 7)",
+          "diff_check": "git diff --check (PASS)"
+        },
+        "residual_risk": "The template remains a teaching baseline; it does not add production-grade experiment orchestration or persistent artifact storage.",
+        "deployment": "not applicable; example runner, tests and durable-state documentation change"
       }
     }
   }
