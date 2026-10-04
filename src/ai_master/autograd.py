@@ -92,7 +92,11 @@ class Value:
             raise ValueError("power is undefined for zero with exponent below 1")
         if self.data < 0.0 and not exponent.is_integer():
             raise ValueError("power is undefined for a negative base with a non-integer exponent")
-        out = Value(self.data**exponent, (self,), f"**{exponent}")
+        try:
+            result = self.data**exponent
+        except OverflowError as exc:
+            raise ValueError("power result must be finite") from exc
+        out = Value(result, (self,), f"**{exponent}")
 
         def backward() -> None:
             self.grad += exponent * self.data ** (exponent - 1) * out.grad

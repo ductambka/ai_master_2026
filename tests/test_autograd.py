@@ -79,6 +79,10 @@ def test_power_and_exp_reject_non_finite_real_domain_results():
         Value(-1.0) ** 0.5
     with pytest.raises(ValueError, match="finite"):
         exp(Value(1000.0))
+    with pytest.raises(ValueError, match="power result must be finite"):
+        Value(1e308) ** 2
+    with pytest.raises(ValueError, match="power result must be finite"):
+        Value(-1e308) ** 2
 
 
 def test_power_accepts_integer_exponents_for_negative_bases():

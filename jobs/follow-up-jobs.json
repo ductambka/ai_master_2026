@@ -157,6 +157,26 @@
         },
         "residual_risk": "The template remains a teaching baseline; it does not add production-grade experiment orchestration or persistent artifact storage.",
         "deployment": "not applicable; example runner, tests and durable-state documentation change"
+      },
+      "follow_up_hardening_4": {
+        "completed_at_utc": "2026-10-04T00:36:46Z",
+        "summary": "Value.__pow__ now converts Python OverflowError from overflowing real powers into the engine's stable ValueError contract.",
+        "verification": {
+          "target_test": "pytest -q tests/test_autograd.py (12 passed)",
+          "full_suite": "pytest -q (57 passed)",
+          "compile": "python3 -m compileall -q src service examples (PASS)",
+          "cli_demo": "PYTHONPATH=src python3 -m ai_master.cli demo (PASS)",
+          "cli_train": "PYTHONPATH=src python3 -m ai_master.cli train --epochs 25 (PASS)",
+          "evaluation_fixture": "PYTHONPATH=src python3 -m ai_master.cli evaluate --gold docs/labs/L07/fixtures/gold.jsonl --predictions docs/labs/L07/fixtures/predictions.jsonl --output /tmp/ai-master-evaluation.json (PASS)",
+          "lab_smoke": "./tooling/run_lab_template.sh (PASS; accuracy 1.0; seed 7)",
+          "diff_check": "git diff --check (PASS)"
+        },
+        "artifact_sha256": {
+          "src/ai_master/autograd.py": "2968e2d091cae31550d9bc9ef259a93d50f7c14ccd1596be47f8859015c6ee72",
+          "tests/test_autograd.py": "ba9a79654216b648ad38b0c94a2599f04d80c19e521ebcb6fa06562f0deb3f04"
+        },
+        "residual_risk": "Autograd remains a teaching-only scalar engine; finite overflow is now normalized, but vectorization, performance, and broader production numerical stability remain out of scope.",
+        "deployment": "not applicable; library and regression-test change"
       }
     }
   }
