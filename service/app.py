@@ -150,7 +150,6 @@ class ServiceHandler(BaseHTTPRequestHandler):
             # Closing the connection prevents the next request from being
             # parsed from attacker-controlled leftovers.
             self.close_connection = True
-            self._send(HTTPStatus.FORBIDDEN, {"error": "tool_not_allowed", "detail": str(exc)}, request_id)
             # Log only routing metadata. The rejected tool input is untrusted
             # user data and must not be copied into the audit log.
             self._log(
@@ -160,11 +159,12 @@ class ServiceHandler(BaseHTTPRequestHandler):
                 path=self.path,
                 tool=payload.get("tool") if "payload" in locals() else None,
             )
+            self._send(HTTPStatus.FORBIDDEN, {"error": "tool_not_allowed", "detail": str(exc)}, request_id)
             return
         except RequestValidationError as exc:
             self.close_connection = True
-            self._send(HTTPStatus.BAD_REQUEST, {"error": "invalid_request", "detail": str(exc)}, request_id)
             self._log("request_rejected", request_id, method="POST", path=self.path, reason=str(exc))
+            self._send(HTTPStatus.BAD_REQUEST, {"error": "invalid_request", "detail": str(exc)}, request_id)
             return
         self._send(HTTPStatus.OK, result, request_id)
         self._log("tool_executed", request_id, method="POST", path=self.path, tool=payload["tool"])

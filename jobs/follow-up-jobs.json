@@ -177,6 +177,27 @@
         },
         "residual_risk": "Autograd remains a teaching-only scalar engine; finite overflow is now normalized, but vectorization, performance, and broader production numerical stability remain out of scope.",
         "deployment": "not applicable; library and regression-test change"
+      },
+      "follow_up_hardening_5": {
+        "completed_at_utc": "2026-10-04T00:47:00Z",
+        "summary": "Service audit logs are emitted before error responses, removing a response/log ordering race while preserving status codes, payloads, and secret-redaction behavior.",
+        "verification": {
+          "service_tests": "pytest -q tests/integration/test_service.py (13 passed)",
+          "full_suite": "pytest -q (57 passed)",
+          "repeated_full_suite": "3 consecutive full suites passed",
+          "compile": "python3 -m compileall -q src service examples (PASS)",
+          "cli_demo": "PYTHONPATH=src python3 -m ai_master.cli demo (PASS)",
+          "cli_train": "PYTHONPATH=src python3 -m ai_master.cli train --epochs 25 (PASS)",
+          "evaluation_fixture": "PYTHONPATH=src python3 -m ai_master.cli evaluate --gold docs/labs/L07/fixtures/gold.jsonl --predictions docs/labs/L07/fixtures/predictions.jsonl --output /tmp/ai-master-evaluation-final.json (PASS)",
+          "lab_smoke": "./tooling/run_lab_template.sh (PASS; accuracy 1.0; seed 7)",
+          "docker_build": "docker build -t ai-master-course-service:review-final . (PASS)",
+          "diff_check": "git diff --check (PASS)"
+        },
+        "artifact_sha256": {
+          "service/app.py": "6a92b34b43f6a340c617db0901a7c2b5db881e6df7c679a08a84e3e9cda06ada"
+        },
+        "residual_risk": "The reference service remains a teaching sample without authentication, TLS, rate limiting, persistent audit storage, or production isolation.",
+        "deployment": "not applicable; service implementation and durable-state documentation change"
       }
     }
   }
