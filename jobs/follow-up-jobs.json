@@ -126,6 +126,21 @@
           "cli_invalid_epochs": "python3 -m ai_master.cli train --epochs 0 (exit 2, expected error, no traceback)",
           "diff_check": "git diff --check (PASS)"
         }
+      },
+      "follow_up_hardening_2": {
+        "completed_at_utc": "2026-10-04T00:11:16Z",
+        "summary": "Value.__pow__ now normalizes integer exponents before real-domain checks, fixing valid negative-base powers without changing scalar-only scope.",
+        "verification": {
+          "target_test": "pytest -q tests/test_autograd.py (9 passed)",
+          "full_suite": "pytest -q (57 passed)",
+          "compile": "python3 -m compileall -q src service (PASS)",
+          "cli_demo": "PYTHONPATH=src python3 -m ai_master.cli demo (PASS)",
+          "cli_train": "PYTHONPATH=src python3 -m ai_master.cli train --epochs 25 (PASS)",
+          "evaluation_fixture": "PYTHONPATH=src python3 -m ai_master.cli evaluate ... (PASS)",
+          "diff_check": "git diff --check (PASS)"
+        },
+        "residual_risk": "Autograd remains a teaching-only scalar engine; vectorization, performance, and production numerical stability are out of scope.",
+        "deployment": "not applicable; library and regression-test change"
       }
     }
   }

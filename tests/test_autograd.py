@@ -79,3 +79,20 @@ def test_power_and_exp_reject_non_finite_real_domain_results():
         Value(-1.0) ** 0.5
     with pytest.raises(ValueError, match="finite"):
         exp(Value(1000.0))
+
+
+def test_power_accepts_integer_exponents_for_negative_bases():
+    even_base = Value(-2)
+    odd_base = Value(-2)
+    even = even_base ** 2
+    odd = odd_base ** 3
+
+    even.backward()
+    even_gradient = even_base.grad
+    odd.backward()
+    odd_gradient = odd_base.grad
+
+    assert even.data == pytest.approx(4.0)
+    assert even_gradient == pytest.approx(-4.0)
+    assert odd.data == pytest.approx(-8.0)
+    assert odd_gradient == pytest.approx(12.0)

@@ -80,6 +80,10 @@ class Value:
     def __pow__(self, exponent: float) -> "Value":
         if isinstance(exponent, bool) or not isinstance(exponent, (int, float)):
             raise TypeError("exponent must be a scalar number")
+        try:
+            exponent = float(exponent)
+        except OverflowError as exc:
+            raise ValueError("exponent must be finite") from exc
         if not math.isfinite(exponent):
             raise ValueError("exponent must be finite")
         if self.data == 0.0 and exponent <= 0:
